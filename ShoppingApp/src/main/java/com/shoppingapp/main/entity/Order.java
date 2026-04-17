@@ -1,4 +1,4 @@
-package com.shoppingapp.entity;
+package com.shoppingapp.main.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

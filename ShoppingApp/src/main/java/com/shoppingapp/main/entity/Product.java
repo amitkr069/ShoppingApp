@@ -33,7 +33,7 @@ public class Product {
   
     //One Product -> One Inventory
     
-    @ManyToOne(mappedBy = "product", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL)
     @JsonIgnore   // prevents infinite loop
     private Inventory inventory;
 
