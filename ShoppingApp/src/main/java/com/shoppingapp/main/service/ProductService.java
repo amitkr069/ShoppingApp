@@ -1,4 +1,4 @@
-package com.shoppingapp.main.Service;
+package com.shoppingapp.main.service;
 
 import com.shoppingapp.main.dto.ProductRequestDTO;
 import com.shoppingapp.main.dto.ProductResponseDTO;

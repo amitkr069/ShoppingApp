@@ -1,4 +1,4 @@
-package com.shoppingapp.main.Controller;
+package com.shoppingapp.main.controller;
 
 
 import com.shoppingapp.main.dto.InventoryRequestDTO;

@@ -1,8 +1,8 @@
-package com.shoppingapp.main.Controller;
+package com.shoppingapp.main.controller;
 
 import com.shoppingapp.main.dto.UserRequestDto;
 import com.shoppingapp.main.dto.UserResponseDto;
-import com.shoppingapp.main.Service.UserService;
+import com.shoppingapp.main.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
