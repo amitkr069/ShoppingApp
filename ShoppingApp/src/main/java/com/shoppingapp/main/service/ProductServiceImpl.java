@@ -1,4 +1,4 @@
-package com.shoppingapp.main.service;
+package com.shoppingapp.main.Service;
 
 public class ProductServiceImpl {
 
