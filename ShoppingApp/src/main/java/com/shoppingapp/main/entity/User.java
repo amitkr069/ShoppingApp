@@ -20,19 +20,19 @@ public class User {
     @Column(nullable = false)
     private String role; // ADMIN / CUSTOMER
 
-    // 🔗 One User → Many Orders
+    // One User → Many Orders
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Order> orders;
 
-    // 🔗 One User → Many Notifications
+    // One User → Many Notifications
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Notification> notifications;
 
-    // ✅ No-Args Constructor
+    //  No-Args Constructor
     public User() {
     }
 
-    // ✅ All-Args Constructor
+    // All-Args Constructor
     public User(Long id, String name, String email, String role) {
         this.id = id;
         this.name = name;
@@ -40,7 +40,7 @@ public class User {
         this.role = role;
     }
 
-    // ✅ Getters and Setters
+    // Getters and Setters
 
     public Long getId() {
         return id;
