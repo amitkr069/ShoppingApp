@@ -57,8 +57,8 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     public boolean validateAndReduceStock(Long inventoryId, Integer quantity) {
-        Inventory inv = inventoryRepository.findById(inventoryId)
-                .orElseThrow(() -> new RuntimeException("Inventory not found"));
+        Inventory inv = inventoryRepository.findByProductProductId(inventoryId)
+                .orElseThrow(() -> new RuntimeException("Inventory not found for product id"));
         
         if (inv.getStockQuantity() >= quantity) {
             inv.setStockQuantity(inv.getStockQuantity() - quantity); 

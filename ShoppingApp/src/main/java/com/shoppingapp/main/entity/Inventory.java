@@ -13,8 +13,8 @@ public class Inventory {
     private Integer stockQuantity;
     private Integer threshold;
 
-    @OneToOne(mappedBy = "inventory", cascade = CascadeType.ALL)
-    @JoinColumn(name = "product_id") 
+    @OneToOne
+    @JoinColumn(name = "product_id")
     private Product product;
 
     public Inventory() {}

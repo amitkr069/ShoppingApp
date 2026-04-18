@@ -11,6 +11,6 @@ public interface NotificationService {
     NotificationResponseDto createNotification(NotificationRequestDto request);
     List<NotificationResponseDto> getAllNotifications();
     NotificationResponseDto getNotificationById(Long id);
-    List<NotificationResponseDto> getNotificationsByUserId(String userId);
+    List<NotificationResponseDto> getNotificationsByUserId(Long userId);
     void createOrderNotification(User user, Order order);
 }

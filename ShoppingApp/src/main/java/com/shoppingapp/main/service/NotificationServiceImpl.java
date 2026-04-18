@@ -50,8 +50,8 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<NotificationResponseDto> getNotificationsByUserId(String userId) {
-        return notificationRepository.findByRecipientReference(userId).stream()
+    public List<NotificationResponseDto> getNotificationsByUserId(Long userId) {
+        return notificationRepository.findByUserId(userId).stream()
                 .map(notification -> modelMapper.map(notification, NotificationResponseDto.class))
                 .collect(Collectors.toList());
     }

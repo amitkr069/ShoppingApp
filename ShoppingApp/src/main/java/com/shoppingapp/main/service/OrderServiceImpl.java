@@ -54,7 +54,8 @@ public class OrderServiceImpl implements OrderService {
 		Order order = new Order();
 
 		// Fetch the real User from the Database via UserService
-		User user = userService.getUserById(request.getUserId());
+		com.shoppingapp.main.dto.UserResponseDto userDto = userService.getUserById(request.getUserId());
+		User user = modelMapper.map(userDto, User.class);
 		order.setUser(user);
 		order.setStatus("CONFIRMED");
 
@@ -63,10 +64,11 @@ public class OrderServiceImpl implements OrderService {
 		for (OrderItemRequestDto itemRequest : request.getItems()) {
 
 			// Fetch the real Product to get the exact price
-			Product product = productService.getProductById(itemRequest.getProductId());
+			com.shoppingapp.main.dto.ProductResponseDTO productDto = productService.getProductById(itemRequest.getProductId());
+			Product product = modelMapper.map(productDto, Product.class);
 
 			// Validate and reduce stock via InventoryService
-			inventoryService.reduceStock(product.getId(), itemRequest.getQuantity());
+			inventoryService.validateAndReduceStock(product.getProductId(), itemRequest.getQuantity());
 
 			OrderItem item = new OrderItem();
 			item.setProduct(product);
