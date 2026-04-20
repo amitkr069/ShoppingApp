@@ -18,6 +18,18 @@ public class Order {
 
     @Column(nullable = false)
     private String status;
+    
+    //changed
+	@Column(nullable = false)
+    private Double totalAmount;
+	
+	public Double getTotalAmount() {
+		return totalAmount;
+	}
+
+	public void setTotalAmount(Double totalAmount) {
+		this.totalAmount = totalAmount;
+	}
 
     // 1 User -> N Orders mapping
     @ManyToOne(fetch = FetchType.LAZY)

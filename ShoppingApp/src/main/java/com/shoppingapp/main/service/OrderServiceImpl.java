@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.shoppingapp.main.dto.CheckoutRequestDto;
 import com.shoppingapp.main.dto.OrderItemRequestDto;
+import com.shoppingapp.main.dto.OrderItemResponseDto;
 import com.shoppingapp.main.dto.OrderResponseDto;
 import com.shoppingapp.main.entity.Order;
 import com.shoppingapp.main.entity.OrderItem;
@@ -12,6 +13,8 @@ import com.shoppingapp.main.entity.Product;
 import com.shoppingapp.main.entity.User;
 import com.shoppingapp.main.exception.ResourceNotFoundException;
 import com.shoppingapp.main.repository.OrderRepository;
+import com.shoppingapp.main.repository.UserRepository;
+import com.shoppingapp.main.repository.ProductRepository;
 
 // import com.shoppingapp.main.service.UserService;
 // import com.shoppingapp.main.service.ProductService;
@@ -32,61 +35,109 @@ public class OrderServiceImpl implements OrderService {
 	private final ProductService productService;
 	private final InventoryService inventoryService;
 	private final NotificationService notificationService;
+	private final UserRepository userRepository;
+	private final ProductRepository productRepository;
 
 	public OrderServiceImpl(OrderRepository orderRepository, 
 			ModelMapper modelMapper,
 			UserService userService,
 			ProductService productService,
 			InventoryService inventoryService,
-			NotificationService notificationService) {
+			NotificationService notificationService, UserRepository userRepository, ProductRepository productRepository) {
 		this.orderRepository = orderRepository;
 		this.modelMapper = modelMapper;
 		this.userService = userService;
 		this.productService = productService;
 		this.inventoryService = inventoryService;
 		this.notificationService = notificationService;
+		this.userRepository = userRepository;
+		this.productRepository = productRepository;
 	}
 
 	@Override
+//	@Transactional
+//	public OrderResponseDto createOrder(CheckoutRequestDto request) {
+//
+//		Order order = new Order();
+//
+//		// Fetch the real User from the Database via UserService
+//		com.shoppingapp.main.dto.UserResponseDto userDto = userService.getUserById(request.getUserId());
+//		User user = modelMapper.map(userDto, User.class);
+//		order.setUser(user);
+//		order.setStatus("CONFIRMED");
+//
+//		List<OrderItem> items = new ArrayList<>();
+//
+//		for (OrderItemRequestDto itemRequest : request.getItems()) {
+//
+//			// Fetch the real Product to get the exact price
+//			com.shoppingapp.main.dto.ProductResponseDTO productDto = productService.getProductById(itemRequest.getProductId());
+//			Product product = modelMapper.map(productDto, Product.class);
+//
+//			// Validate and reduce stock via InventoryService
+//			inventoryService.validateAndReduceStock(product.getProductId(), itemRequest.getQuantity());
+//
+//			OrderItem item = new OrderItem();
+//			item.setProduct(product);
+//			item.setQuantity(itemRequest.getQuantity());
+//			item.setPrice(product.getPrice()); 
+//
+//			items.add(item);
+//		}
+//
+//		order.setItems(items); 
+//
+//		// Save order to database
+//		Order savedOrder = orderRepository.save(order);
+//
+//		// Trigger Notification via NotificationService
+//		notificationService.createOrderNotification(user, savedOrder);
+//
+//		return modelMapper.map(savedOrder, OrderResponseDto.class);
+//	}
+	
+	
+	
+	
 	@Transactional
 	public OrderResponseDto createOrder(CheckoutRequestDto request) {
 
-		Order order = new Order();
+	    Order order = new Order();
 
-		// Fetch the real User from the Database via UserService
-		com.shoppingapp.main.dto.UserResponseDto userDto = userService.getUserById(request.getUserId());
-		User user = modelMapper.map(userDto, User.class);
-		order.setUser(user);
-		order.setStatus("CONFIRMED");
+	    User user = userRepository.findById(request.getUserId())
+	            .orElseThrow(() -> new RuntimeException("User not found"));
 
-		List<OrderItem> items = new ArrayList<>();
+	    order.setUser(user);
+	    order.setStatus("CONFIRMED");
 
-		for (OrderItemRequestDto itemRequest : request.getItems()) {
+	    List<OrderItem> items = new ArrayList<>();
+	    double totalAmount = 0;
 
-			// Fetch the real Product to get the exact price
-			com.shoppingapp.main.dto.ProductResponseDTO productDto = productService.getProductById(itemRequest.getProductId());
-			Product product = modelMapper.map(productDto, Product.class);
+	    for (OrderItemRequestDto itemRequest : request.getItems()) {
 
-			// Validate and reduce stock via InventoryService
-			inventoryService.validateAndReduceStock(product.getProductId(), itemRequest.getQuantity());
+	        Product product = productRepository.findById(itemRequest.getProductId())
+	                .orElseThrow(() -> new RuntimeException("Product not found"));
 
-			OrderItem item = new OrderItem();
-			item.setProduct(product);
-			item.setQuantity(itemRequest.getQuantity());
-			item.setPrice(product.getPrice()); 
+	        inventoryService.validateAndReduceStock(product.getProductId(), itemRequest.getQuantity());
 
-			items.add(item);
-		}
+	        OrderItem item = new OrderItem();
+	        item.setProduct(product);
+	        item.setQuantity(itemRequest.getQuantity());
+	        item.setPrice(product.getPrice());
 
-		order.setItems(items); 
+	        totalAmount += product.getPrice() * itemRequest.getQuantity();
 
-		// Save order to database
-		Order savedOrder = orderRepository.save(order);
+	        items.add(item);
+	    }
 
-		// Trigger Notification via NotificationService
-		notificationService.createOrderNotification(user, savedOrder);
+	    order.setItems(items);
+	    order.setTotalAmount(totalAmount);
 
-		return modelMapper.map(savedOrder, OrderResponseDto.class);
+	    Order savedOrder = orderRepository.save(order);
+
+	    notificationService.createOrderNotification(user, savedOrder);
+
+	    return mapToDto(savedOrder);
 	}
 
 	@Override
@@ -108,5 +159,30 @@ public class OrderServiceImpl implements OrderService {
 		return orderRepository.findByUserId(userId).stream()
 				.map(order -> modelMapper.map(order, OrderResponseDto.class))
 				.collect(Collectors.toList());
+	}
+	
+	
+	//changed
+	private OrderResponseDto mapToDto(Order order) {
+	    OrderResponseDto dto = new OrderResponseDto();
+
+	    dto.setOrderId(order.getId());
+	    dto.setUserId(order.getUser().getId());
+	    dto.setOrderStatus(order.getStatus());
+	    dto.setTotalAmount(order.getTotalAmount());
+
+	    List<OrderItemResponseDto> itemDtos = order.getItems().stream().map(item -> {
+	        OrderItemResponseDto i = new OrderItemResponseDto();
+	        i.setProductId(item.getProduct().getProductId());
+	        i.setQuantity(item.getQuantity());
+
+	        i.setUnitPrice(item.getPrice());
+
+	        return i;
+	    }).toList();
+
+	    dto.setItems(itemDtos);
+
+	    return dto;
 	}
 }

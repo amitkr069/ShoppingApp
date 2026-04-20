@@ -27,15 +27,39 @@ public class InventoryServiceImpl implements InventoryService {
     @Autowired
     private ModelMapper modelMapper;
 
+//    @Override
+//    public InventoryResponseDTO createInventory(InventoryRequestDTO requestDto) {
+//        Inventory inventory = modelMapper.map(requestDto, Inventory.class);
+//        
+//        Product product = productRepository.findById(requestDto.getProductId())
+//                .orElseThrow(() -> new RuntimeException("Product not found"));
+//        inventory.setProduct(product);
+//        
+//        Inventory saved = inventoryRepository.save(inventory);
+//        return modelMapper.map(saved, InventoryResponseDTO.class);
+//    }
+    
     @Override
     public InventoryResponseDTO createInventory(InventoryRequestDTO requestDto) {
-        Inventory inventory = modelMapper.map(requestDto, Inventory.class);
-        
+
+        // check if already exists
+        if (inventoryRepository.findByProductProductId(requestDto.getProductId()).isPresent()) {
+            throw new RuntimeException("Inventory already exists for this product");
+        }
+
         Product product = productRepository.findById(requestDto.getProductId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        Inventory inventory = new Inventory();
+        inventory.setStockQuantity(requestDto.getStockQuantity());
+        inventory.setThreshold(requestDto.getThreshold());
+
+        // set both sides
         inventory.setProduct(product);
-        
+        product.setInventory(inventory);
+
         Inventory saved = inventoryRepository.save(inventory);
+
         return modelMapper.map(saved, InventoryResponseDTO.class);
     }
 
